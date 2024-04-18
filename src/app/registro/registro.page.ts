@@ -1,5 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 
+// Según procedimental s3
+import { AngularFireAuth } from '@angular/core';
+import { auth } from 'firebase/app';
+import { AlertController } from '@ionic/angular';
+import { Router } from '@angular/router';
+
 @Component({
   selector: 'app-registro',
   templateUrl: './registro.page.html',
@@ -7,9 +13,40 @@ import { Component, OnInit } from '@angular/core';
 })
 export class RegistroPage implements OnInit {
 
-  constructor() { }
+  username: string="";
+  password: string="";
+  cpassword: string="";
+  
+  constructor(
+    public afAuth: AngularFireAuth,
+    public alert: AlertController,
+    public route: Router
+  ) { }
 
   ngOnInit() {
   }
 
+  async registrar() {
+    const {username, password, cpassword} = this
+    if(password !== cpassword) {
+      this.showAlert("Error!", "Las contraseñas no coinciden");
+    }
+    try {
+      const res = await this.afAuth.auth.createUserWithEmailAndPassword(username, password)
+      this.showAlert("Usuario Registrado", "Bienvenido " + username)
+      this.route.navigate(['login'])
+    } catch(err) {
+      console.dir(err);
+      this.showAlert("Error", err.message);
+    }
+  }
+
+  async showAlert(header: string, message: string) {
+    const alert = await this.alert.create({
+      header,
+      message,
+      buttons: ["ok"]
+    });
+    await alert.present();
+  }
 }
